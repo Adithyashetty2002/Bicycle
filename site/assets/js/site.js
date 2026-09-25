@@ -34,9 +34,29 @@
     nav.parentNode.insertBefore(toggle, nav);
   }
   if (toggle && nav) {
+    function closeMenu() {
+      nav.classList.remove("is-open");
+      toggle.setAttribute("aria-expanded", "false");
+      var label = toggle.querySelector(".sr-only");
+      if (label) { label.textContent = "Open menu"; }
+    }
     toggle.addEventListener("click", function () {
       var open = nav.classList.toggle("is-open");
       toggle.setAttribute("aria-expanded", String(open));
+      var label = toggle.querySelector(".sr-only");
+      if (label) { label.textContent = open ? "Close menu" : "Open menu"; }
+    });
+    nav.addEventListener("click", function (event) {
+      if (event.target.closest("a")) { closeMenu(); }
+    });
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && nav.classList.contains("is-open")) {
+        closeMenu();
+        toggle.focus();
+      }
+    });
+    window.addEventListener("resize", function () {
+      if (window.innerWidth > 760) { closeMenu(); }
     });
   }
 
