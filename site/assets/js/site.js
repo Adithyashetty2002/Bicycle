@@ -125,6 +125,7 @@
     shareButton.textContent = "Share bicycle";
     shareButton.setAttribute("data-share-product", "");
     shareButton.setAttribute("aria-label", "Share " + productName);
+    shareButton.setAttribute("aria-live", "polite");
     productActions.appendChild(shareButton);
 
     shareButton.addEventListener("click", function () {
@@ -135,16 +136,46 @@
         text: "Take a look at the " + productName + " bicycle from Vayu Bicycles.",
         url: productUrl
       };
-      function openWhatsApp() {
-        var message = shareData.text + " " + shareData.url;
-        window.open("https://wa.me/?text=" + encodeURIComponent(message), "_blank", "noopener,noreferrer");
+
+      function showCopyResult(copied) {
+        shareButton.textContent = copied ? "Link copied" : "Copy link";
+        shareButton.setAttribute("aria-label", copied ? productName + " link copied" : "Copy link to " + productName);
+        window.setTimeout(function () {
+          shareButton.textContent = "Share bicycle";
+          shareButton.setAttribute("aria-label", "Share " + productName);
+        }, 2400);
       }
-      if (navigator.share && (!navigator.canShare || navigator.canShare(shareData))) {
+
+      function legacyCopy() {
+        var temporaryInput = document.createElement("textarea");
+        temporaryInput.value = productUrl;
+        temporaryInput.setAttribute("readonly", "");
+        temporaryInput.style.position = "fixed";
+        temporaryInput.style.opacity = "0";
+        document.body.appendChild(temporaryInput);
+        temporaryInput.select();
+        var copied = false;
+        try { copied = document.execCommand("copy"); } catch (error) { copied = false; }
+        temporaryInput.remove();
+        showCopyResult(copied);
+      }
+
+      function copyProductLink() {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(productUrl).then(function () {
+            showCopyResult(true);
+          }).catch(legacyCopy);
+        } else {
+          legacyCopy();
+        }
+      }
+
+      if (navigator.share) {
         navigator.share(shareData).catch(function (error) {
-          if (error && error.name !== "AbortError") { openWhatsApp(); }
+          if (error && error.name !== "AbortError") { copyProductLink(); }
         });
       } else {
-        openWhatsApp();
+        copyProductLink();
       }
     });
   }
