@@ -36,9 +36,22 @@
   window.addEventListener("vayu:consent", function (event) {
     if (event.detail === "granted") { loadAnalytics(); } else { revokeAnalytics(); }
   });
+  var savedConsent = "";
   try {
-    if (localStorage.getItem("vayu-analytics-consent") === "granted") { loadAnalytics(); }
+    savedConsent = localStorage.getItem("vayu-analytics-consent") || "";
   } catch (error) {
-    // Analytics remains disabled when browser storage is unavailable.
+    // Fall through to the consent cookie when storage is unavailable.
   }
+  if (!savedConsent) {
+    try {
+      var prefix = "vayu_analytics_consent=";
+      var cookie = document.cookie.split(";").map(function (part) { return part.trim(); }).find(function (part) {
+        return part.indexOf(prefix) === 0;
+      });
+      savedConsent = cookie ? decodeURIComponent(cookie.slice(prefix.length)) : "";
+    } catch (error) {
+      // Analytics remains disabled when both storage methods are unavailable.
+    }
+  }
+  if (savedConsent === "granted") { loadAnalytics(); }
 })();

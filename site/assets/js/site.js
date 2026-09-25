@@ -96,6 +96,7 @@
   }
 
   var consentKey = "vayu-analytics-consent";
+  var consentCookie = "vayu_analytics_consent";
   var banner = document.querySelector("[data-consent-banner]");
   if (!banner) {
     banner = document.createElement("section");
@@ -106,6 +107,18 @@
     banner.innerHTML = "<div><h2 id=\"consent-title\">Your privacy choices</h2><p>We use optional analytics to understand how the site is used.</p></div><div class=\"consent-actions\"><button class=\"button button-plain\" type=\"button\" data-consent=\"denied\">Reject</button><button class=\"button button-primary\" type=\"button\" data-consent=\"granted\">Accept</button></div>";
     document.body.appendChild(banner);
   }
+  function hideConsentBanner() {
+    if (!banner) { return; }
+    banner.hidden = true;
+    banner.setAttribute("aria-hidden", "true");
+    banner.style.setProperty("display", "none", "important");
+  }
+  function showConsentBanner() {
+    if (!banner) { return; }
+    banner.style.removeProperty("display");
+    banner.hidden = false;
+    banner.removeAttribute("aria-hidden");
+  }
   function updateConsentUi(value) {
     document.documentElement.setAttribute("data-analytics-consent", value || "unset");
     document.querySelectorAll("[data-consent]").forEach(function (button) {
@@ -114,7 +127,17 @@
   }
   function readConsent() {
     try {
-      return localStorage.getItem(consentKey) || "";
+      var storedConsent = localStorage.getItem(consentKey);
+      if (storedConsent) { return storedConsent; }
+    } catch (error) {
+      // Fall through to the consent cookie when storage is unavailable.
+    }
+    try {
+      var prefix = consentCookie + "=";
+      var cookie = document.cookie.split(";").map(function (part) { return part.trim(); }).find(function (part) {
+        return part.indexOf(prefix) === 0;
+      });
+      return cookie ? decodeURIComponent(cookie.slice(prefix.length)) : "";
     } catch (error) {
       return "";
     }
@@ -126,6 +149,11 @@
       // Privacy-focused browsers can block storage. The choice should still
       // take effect for the current page instead of leaving the banner stuck.
     }
+    try {
+      document.cookie = consentCookie + "=" + encodeURIComponent(value) + "; Max-Age=31536000; Path=/; SameSite=Lax";
+    } catch (error) {
+      // The banner still closes for this page when all persistence is blocked.
+    }
   }
   function clearInvalidConsent() {
     try {
@@ -133,12 +161,17 @@
     } catch (error) {
       // There is nothing else to clear when browser storage is unavailable.
     }
+    try {
+      document.cookie = consentCookie + "=; Max-Age=0; Path=/; SameSite=Lax";
+    } catch (error) {
+      // There is nothing else to clear when cookies are unavailable.
+    }
   }
   function applyConsent(value) {
     if (value !== "granted" && value !== "denied") { return; }
     storeConsent(value);
     updateConsentUi(value);
-    if (banner) { banner.hidden = true; }
+    hideConsentBanner();
     window.dispatchEvent(new CustomEvent("vayu:consent", { detail: value }));
   }
   var savedConsent = readConsent();
@@ -147,19 +180,22 @@
     savedConsent = "";
   }
   updateConsentUi(savedConsent);
-  if (banner && !savedConsent) { banner.hidden = false; }
+  if (banner) {
+    if (savedConsent) { hideConsentBanner(); } else { showConsentBanner(); }
+    banner.querySelectorAll("[data-consent]").forEach(function (button) {
+      button.addEventListener("click", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        applyConsent(button.getAttribute("data-consent"));
+      });
+    });
+  }
   document.addEventListener("click", function (event) {
-    var choice = event.target.closest("[data-consent]");
-    if (choice) {
-      event.preventDefault();
-      applyConsent(choice.getAttribute("data-consent"));
-      return;
-    }
     var opener = event.target.closest("[data-open-consent]");
     if (opener) {
       event.preventDefault();
       if (!banner) { return; }
-      banner.hidden = false;
+      showConsentBanner();
       var firstChoice = banner.querySelector("[data-consent]");
       if (firstChoice) { firstChoice.focus(); }
     }
