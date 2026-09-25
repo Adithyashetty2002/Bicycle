@@ -1,15 +1,6 @@
 (function () {
   "use strict";
 
-  var config = window.BICYCLE_SITE_CONFIG || {};
-  var cdnBase = (config.imageCdnBase || "").replace(/\/$/, "");
-
-  if (cdnBase) {
-    document.querySelectorAll("[data-cdn-src]").forEach(function (image) {
-      image.src = cdnBase + "/" + image.getAttribute("data-cdn-src");
-    });
-  }
-
   document.querySelectorAll("[data-current-year]").forEach(function (node) {
     node.textContent = new Date().getFullYear();
   });
@@ -53,6 +44,19 @@
   var requestedModel = new URLSearchParams(window.location.search).get("model");
   if (modelSelect && requestedModel) {
     modelSelect.value = requestedModel;
+  }
+
+  var legalAcknowledgement = document.querySelector("[data-form-consent]");
+  var consentSubmit = document.querySelector("[data-consent-submit]");
+  if (legalAcknowledgement && consentSubmit) {
+    function updateSubmitState() {
+      var disabled = !legalAcknowledgement.checked;
+      consentSubmit.disabled = disabled;
+      consentSubmit.setAttribute("aria-disabled", String(disabled));
+    }
+    legalAcknowledgement.addEventListener("change", updateSubmitState);
+    window.addEventListener("pageshow", updateSubmitState);
+    updateSubmitState();
   }
 
   var filters = document.querySelectorAll("[data-filter]");
@@ -102,16 +106,35 @@
     banner.innerHTML = "<div><h2 id=\"consent-title\">Your privacy choices</h2><p>We use optional analytics to understand how the site is used.</p></div><div class=\"consent-actions\"><button class=\"button button-plain\" type=\"button\" data-consent=\"denied\">Reject</button><button class=\"button button-primary\" type=\"button\" data-consent=\"granted\">Accept</button></div>";
     document.body.appendChild(banner);
   }
+  function updateConsentUi(value) {
+    document.documentElement.setAttribute("data-analytics-consent", value || "unset");
+    document.querySelectorAll("[data-consent]").forEach(function (button) {
+      button.setAttribute("aria-pressed", String(button.getAttribute("data-consent") === value));
+    });
+  }
   function applyConsent(value) {
+    if (value !== "granted" && value !== "denied") { return; }
     localStorage.setItem(consentKey, value);
+    updateConsentUi(value);
     window.dispatchEvent(new CustomEvent("vayu:consent", { detail: value }));
     if (banner) { banner.hidden = true; }
   }
-  if (banner && !localStorage.getItem(consentKey)) { banner.hidden = false; }
+  var savedConsent = localStorage.getItem(consentKey);
+  if (savedConsent !== "granted" && savedConsent !== "denied") {
+    localStorage.removeItem(consentKey);
+    savedConsent = "";
+  }
+  updateConsentUi(savedConsent);
+  if (banner && !savedConsent) { banner.hidden = false; }
   document.querySelectorAll("[data-consent]").forEach(function (button) {
     button.addEventListener("click", function () { applyConsent(button.getAttribute("data-consent")); });
   });
   document.querySelectorAll("[data-open-consent]").forEach(function (button) {
-    button.addEventListener("click", function () { if (banner) { banner.hidden = false; } });
+    button.addEventListener("click", function () {
+      if (!banner) { return; }
+      banner.hidden = false;
+      var firstChoice = banner.querySelector("[data-consent]");
+      if (firstChoice) { firstChoice.focus(); }
+    });
   });
 })();

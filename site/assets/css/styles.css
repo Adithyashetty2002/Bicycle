@@ -75,6 +75,7 @@ h3 { margin-bottom: 10px; font-size: 1.55rem; font-weight: 600; }
 .button-dark { background: var(--gray-100); color: var(--white); }
 .button-dark:hover, .button-dark:focus-visible { background: var(--blue-70); }
 .button-plain { border-color: var(--gray-30); background: var(--white); color: var(--gray-100); }
+.button:disabled, .button:disabled:hover { pointer-events: none; cursor: not-allowed; border-color: var(--gray-30); background: var(--gray-30); color: var(--gray-70); opacity: .72; }
 .hero-media { position: relative; margin: 0; aspect-ratio: 3 / 2; }
 .hero-media::before { content: ""; position: absolute; inset: 8% -12% -8% 18%; background: rgba(255, 255, 255, .13); }
 .hero-media img { position: relative; z-index: 1; width: 100%; height: 100%; object-fit: contain; object-position: center; }
