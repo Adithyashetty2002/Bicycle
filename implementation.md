@@ -4,7 +4,7 @@
 
 Build a responsive, static bicycle catalogue website that presents bicycles professionally and converts visitors into enquiries. The website will not include carts, checkout, online payments, accounts, or direct purchasing. Every sales path will lead to a contact form or clearly displayed business contact details.
 
-The generated production output will be static HTML, CSS, JavaScript, and metadata hosted on Netlify. Product and marketing images will be delivered from Bunny.net CDN. Netlify Forms will receive enquiries and notify the configured business email address.
+The generated production output will be static HTML, CSS, JavaScript, metadata, and image assets hosted on Netlify. Netlify's global CDN and Image CDN will deliver and optimize images. Netlify Forms will receive enquiries and notify the configured business email address.
 
 This is a Standard change. The plan is the only deliverable at this stage; implementation begins only after approval.
 
@@ -33,7 +33,7 @@ This is a Standard change. The plan is the only deliverable at this stage; imple
 - Recommended implementation: Astro in static-output mode, with product content stored as validated local data. The final Netlify output remains static.
 - Product catalogue content can be updated in Git and redeployed automatically.
 - Netlify Forms is the form processor. The owner will configure a verified notification email in Netlify.
-- Bunny.net Storage plus a Pull Zone will be the source of all raster and vector image URLs, including product imagery, logo image variants, social preview image, and favicon assets.
+- Netlify will be the sole host for raster and vector image assets, including product imagery, logo variants, social previews, and favicon assets.
 - The launch language is English. Additional languages are a future phase unless requested before implementation.
 - The legal jurisdiction, business identity, warranty terms, delivery geography, and contact details are not yet known. Legal pages will contain no invented facts and cannot be finalized until these inputs are provided.
 - Analytics is non-essential. It will respect the visitor's consent selection and applicable regional requirements.
@@ -133,7 +133,7 @@ Each bicycle record should contain:
 - Frame, fork, drivetrain, brakes, wheels, tyres, sizes, colours, weight, and other verified specifications.
 - Availability wording such as "Enquire for current availability" rather than unverified stock counts.
 - Optional indicative price only if the business wants it, always paired with a quotation/variation disclaimer and no purchase action.
-- Bunny.net image URLs, intrinsic dimensions, aspect ratio, focal point, and accurate alternative text.
+- Netlify image paths, intrinsic dimensions, aspect ratio, focal point, and accurate alternative text.
 - SEO title, meta description, canonical path, social preview image, and publish/update dates.
 - Warranty summary and any model-specific safety or usage notice.
 
@@ -152,8 +152,8 @@ flowchart TB
     B --> C[Netlify build]
     C --> D[Static HTML/CSS/JS]
     D --> E[Netlify global hosting]
-    F[Bunny Storage] --> G[Bunny Pull Zone CDN]
-    G --> D
+    F[Static image assets] --> G[Netlify Image CDN]
+    G --> E
     D --> H[Visitor browser]
     H --> I[Netlify Forms]
     I --> J[Sales notification email]
@@ -167,25 +167,27 @@ flowchart TB
 - `src/components/`: header, footer, catalogue, filter controls, product details, contact form, consent controls, and metadata.
 - `src/content/` or `src/data/`: validated bicycle records and site-wide business content.
 - `src/styles/`: colour tokens, typography, layout, components, and utilities.
-- `public/`: non-image essentials only. Images and image-like brand assets use absolute Bunny CDN URLs.
+- `public/` or `site/assets/images/`: approved images and other static assets deployed with the site.
 - `tests/`: unit/content validation, accessibility checks, metadata checks, and browser journeys.
 - `netlify.toml`: publish path, security headers, redirects, cache policy, and deploy contexts.
 
 JavaScript will be limited to the mobile navigation, catalogue filtering, consent management, analytics loading, and small progressive enhancements. The catalogue, product pages, legal content, and contact form must remain usable without client-side JavaScript.
 
-## 10. Bunny.net Image Delivery Plan
+## 10. Netlify Image Delivery Plan
 
-- Create a Bunny Storage Zone for approved originals and a linked Pull Zone for public delivery.
-- Prefer a branded image hostname such as `images.example.com` with TLS.
+- Store approved originals with the static site under version-controlled image directories.
+- Serve images from the production Netlify hostname or approved custom domain over HTTPS.
 - Use versioned, lowercase, descriptive filenames; never overwrite an image at an existing production URL.
 - Define folders for `brand/`, `bicycles/<model>/`, `social/`, `icons/`, and `content/`.
-- Enable Bunny Optimizer and generate responsive width variants through image transformation parameters.
+- Use Netlify Image CDN transformations for responsive widths, crops, formats, and quality where useful.
 - Produce `srcset` and `sizes` for catalogue and product images; preserve width and height attributes to prevent layout shift.
 - Use modern WebP/AVIF where compatible, with an appropriate fallback for social crawlers and favicon formats.
 - Lazy-load below-the-fold images; eagerly load and prioritize the main above-the-fold bicycle image.
-- Set long immutable caching on versioned assets and verify CORS/referrer behaviour where needed.
+- Configure appropriate caching for versioned assets and verify CORS/referrer behaviour where needed.
 - Keep an asset register mapping every CDN URL to owner, source, licence, consent/model release, alt text, dimensions, and replacement history.
-- Do not expose Bunny API or Storage credentials in browser code, Git, or Netlify build output.
+- Keep image delivery dependency-free; no separate image-hosting credentials are required.
+
+Netlify documents same-origin resizing, cropping, format conversion, quality control, and edge caching in its [Image CDN guide](https://docs.netlify.com/build/image-cdn/overview/).
 
 ## 11. Contact Form and Email Delivery
 
@@ -232,7 +234,7 @@ Every indexable page will include a unique title, meta description, canonical UR
 ### WhatsApp and social sharing
 
 - Set absolute `og:title`, `og:description`, `og:url`, `og:type`, `og:site_name`, and `og:image` metadata.
-- Use a versioned 1200 x 630 JPEG social image hosted on Bunny CDN, under a stable HTTPS URL, showing the brand, a clear bicycle, and restrained readable text.
+- Use a versioned 1200 x 630 JPEG social image hosted on Netlify under a stable, query-free HTTPS URL, showing a clear bicycle and appropriate brand imagery.
 - Include image width, height, type, and alternative text metadata, plus corresponding Twitter/X card tags.
 - Product pages may use model-specific preview images; all pages need a safe site-wide fallback.
 - Validate the public production URL with social preview debuggers and a real WhatsApp test. Social services cache metadata, so changed previews require a versioned image URL and may not refresh immediately.
@@ -242,7 +244,7 @@ Every indexable page will include a unique title, meta description, canonical UR
 
 - Provide ICO, 16px/32px PNG, 180px Apple touch icon, 192px/512px web-app icons, maskable icon, and a web manifest.
 - Keep the mark simple and test it at small sizes in light and dark browser chrome.
-- Host the image files on Bunny CDN and reference them with absolute URLs. Verify browser compatibility before launch; retain a documented same-origin fallback only if a target browser fails CDN-hosted icons.
+- Host the image files with the Netlify site and reference them with same-origin URLs. Verify browser compatibility before launch.
 
 ## 14. Legal and Disclaimer Content
 
@@ -253,7 +255,7 @@ The following content must be owner-supplied or reviewed by a qualified professi
 - Legal business/controller identity and contact details.
 - Data collected through forms, server/CDN logs, GA4, Clarity, and consent storage.
 - Purpose and lawful basis for each use.
-- Processors and data recipients: Netlify, Bunny.net, Google, Microsoft, email provider, and any later service.
+- Processors and data recipients: Netlify, Google, Microsoft, email provider, and any later service.
 - International transfers and relevant safeguards.
 - Retention periods by data category.
 - Visitor rights, request procedure, complaint authority, children/minor policy, security summary, and policy update date.
@@ -306,7 +308,7 @@ Legal acceptance criterion: no placeholder, contradictory, copied, or invented l
 ### Security
 
 - HTTPS-only with HSTS after domain validation.
-- Content Security Policy permitting only required Netlify, Bunny, Google, and Microsoft endpoints.
+- Content Security Policy permitting only required Netlify, Google, and Microsoft endpoints.
 - `X-Content-Type-Options`, `Referrer-Policy`, frame protection, and a restrictive `Permissions-Policy`.
 - No secrets or personal data in repository content, URLs, analytics events, or client logs.
 - Dependency review, lockfile, automated audit, spam protection, and quarterly third-party-script review.
@@ -337,7 +339,7 @@ Netlify's [Git workflow overview](https://docs.netlify.com/build/git-workflows/o
 | Consent | Fresh visit, accept, reject, change choice, cookie inspection, GA4/Clarity network calls |
 | Privacy | No PII in analytics, URLs, session replay, console, or rendered source |
 | Social | Canonical metadata, 1200 x 630 image reachability, WhatsApp real-device preview |
-| CDN | All rendered image URLs use approved Bunny hostname; no broken or oversized images |
+| CDN | All rendered images resolve through Netlify; no broken or oversized images |
 | SEO | Titles, descriptions, canonicals, sitemap, robots, structured data, status codes |
 | Accessibility | Automated scan plus keyboard, zoom, contrast, screen-reader and reduced-motion checks |
 | Performance | Lighthouse and Core Web Vitals checks on home, catalogue, product, and contact templates |
@@ -347,7 +349,7 @@ Netlify's [Git workflow overview](https://docs.netlify.com/build/git-workflows/o
 
 ### Phase 0: Business inputs and approval
 
-Collect brand assets, legal entity data, domain, contacts, target markets, catalogue, verified specifications, image rights, warranty/sales terms, GA4 ID, Clarity ID, Bunny account details, and Netlify ownership.
+Collect brand assets, legal entity data, domain, contacts, target markets, catalogue, verified specifications, image rights, warranty/sales terms, GA4 ID, Clarity ID, and Netlify ownership.
 
 Pass: all required inputs have named owners, source references, and approval status; unresolved facts are explicitly blocked from publication.
 
@@ -371,9 +373,9 @@ Pass: a production-like preview delivers a test enquiry email; analytics is abse
 
 ### Phase 4: Legal, SEO, social, and asset delivery
 
-Publish reviewed legal pages, metadata, structured data, sitemap, social image, favicons, and Bunny CDN image pipeline.
+Publish reviewed legal pages, metadata, structured data, sitemap, social images, favicons, and the Netlify image pipeline.
 
-Pass: every image resolves from the approved Bunny hostname; legal approval is recorded; WhatsApp shows the correct image, title, description, and destination URL.
+Pass: every image resolves through Netlify; legal approval is recorded; WhatsApp shows the correct image, title, description, and destination URL.
 
 ### Phase 5: CI/CD, QA, and launch
 
@@ -388,8 +390,8 @@ Pass: all required checks pass, critical/high defects are zero, owner signs off 
 3. Complete bicycle catalogue, verified specifications, optional indicative prices, and stock wording.
 4. Rights-cleared product/lifestyle images and whether people/minors appear in them.
 5. Warranty, returns, delivery, assembly, fitting, financing, and after-sales policies.
-6. Domain name and preferred Bunny image subdomain.
-7. Git provider/repository ownership and Netlify/Bunny administrators.
+6. Domain name and preferred Netlify custom domain, if any.
+7. Git provider/repository ownership and Netlify administrators.
 8. Form recipient email, response-time promise, retention period, and enquiry escalation owner.
 9. GA4 Measurement ID, Clarity Project ID, consent jurisdictions, and privacy/legal reviewer.
 10. Whether phone, direct email, social links, or WhatsApp chat should be shown as secondary contact methods.
@@ -398,11 +400,10 @@ Pass: all required checks pass, critical/high defects are zero, owner signs off 
 
 - The deployed result is static and responsive, with no cart, checkout, payment, or direct buying path.
 - A visitor can browse every bicycle and submit a model-specific enquiry that reaches the approved email recipient.
-- All images are served from the approved Bunny CDN hostname with responsive sizing and documented rights.
+- All images are served through Netlify with responsive sizing and documented rights.
 - GA4 and Clarity work only according to the documented consent state and collect no form PII.
 - WhatsApp sharing displays the approved image, title, description, and correct canonical link.
 - Favicons render across the supported browser/device set.
 - Legal and policy pages are complete, consistent, dated, linked site-wide, and owner/legal approved.
 - CI checks and Deploy Previews protect production; only the production branch publishes the live site.
 - Accessibility, performance, SEO, security, browser, form, and post-deploy acceptance checks pass.
-

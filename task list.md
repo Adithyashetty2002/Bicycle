@@ -11,7 +11,7 @@ This checklist implements the approved scope in `implementation.md`. It is plann
 - [ ] Collect logo sources, brand guidance, image files, usage licences, model releases, attribution requirements, and alternative-text notes.
 - [ ] Confirm warranty, returns/cancellation, delivery, assembly, fitting, safety, servicing, financing, and quotation terms.
 - [ ] Name content, legal, privacy, accessibility, sales, and technical approvers.
-- [ ] Confirm Git provider, Netlify team, Bunny.net account, GA4 property, Clarity project, and administrator ownership.
+- [ ] Confirm Git provider, Netlify team, GA4 property, Clarity project, and administrator ownership.
 - [ ] Confirm form notification address, response owner, response-time statement, retention period, and deletion process.
 - [ ] Record every unresolved input as a launch blocker rather than filling it with invented content.
 
@@ -38,18 +38,18 @@ This checklist implements the approved scope in `implementation.md`. It is plann
 - [ ] Verify stable layout at 320px through wide desktop sizes and prevent content overlap or horizontal overflow.
 - [ ] Add automated content checks for missing fields, duplicate slugs, invalid URLs, and unapproved placeholder text.
 
-## Phase 3: Bunny.net Asset Pipeline
+## Phase 3: Netlify Image Asset Pipeline
 
-- [ ] Create the Bunny Storage Zone and linked Pull Zone.
-- [ ] Configure the approved branded image hostname and TLS.
+- [ ] Store approved image originals under `site/assets/images/` with the static site.
+- [ ] Confirm the production Netlify hostname or custom domain and TLS.
 - [ ] Define versioned folder/file naming and asset ownership conventions.
-- [ ] Upload approved originals and record rights, dimensions, alt text, and source for each asset.
-- [ ] Enable and configure Bunny Optimizer for responsive formats, widths, and quality.
+- [ ] Add approved originals and record rights, dimensions, alt text, and source for each asset.
+- [ ] Configure Netlify Image CDN transformations for responsive formats, widths, and quality where useful.
 - [ ] Implement responsive image sources, intrinsic dimensions, focal crops, lazy loading, and hero prioritization.
-- [ ] Upload the social preview and full favicon/icon package to Bunny.
-- [ ] Set and verify immutable cache rules for versioned assets.
-- [ ] Add a build check that rejects rendered image sources outside the approved Bunny hostname.
-- [ ] Verify no Bunny credential is present in Git or client output.
+- [ ] Add the social previews and full favicon/icon package to the deployed site.
+- [ ] Set and verify cache rules for versioned assets in `netlify.toml`.
+- [ ] Add a build check that rejects unapproved external image sources.
+- [ ] Verify every production image resolves successfully through Netlify.
 
 ## Phase 4: Contact and Lead Handling
 
@@ -114,7 +114,7 @@ This checklist implements the approved scope in `implementation.md`. It is plann
 - [ ] Configure public environment IDs and protected settings in Netlify with least-privilege access.
 - [ ] Add CI checks for format, lint, type/content validation, tests, static build, links, metadata, accessibility smoke, dependencies, and secrets.
 - [ ] Configure HTTPS, canonical domain redirects, security headers, and Content Security Policy.
-- [ ] Test CSP against Netlify Forms, Bunny images, GA4, and Clarity; remove unused origins.
+- [ ] Test CSP against Netlify Forms, Netlify-hosted images, GA4, and Clarity; remove unused origins.
 - [ ] Document approval, deployment, DNS/CDN access, rollback, incident, and credential-rotation procedures.
 - [ ] Verify a failed check cannot publish production.
 
@@ -145,4 +145,4 @@ This checklist implements the approved scope in `implementation.md`. It is plann
 
 ## Launch Gate
 
-Production is approved only when every required item above is complete or has a named owner, written risk acceptance, and review date. Critical exceptions are not eligible for risk acceptance: broken enquiry delivery, missing legal identity/privacy notice, analytics without required consent, exposed secrets, inaccessible core journeys, non-Bunny image delivery, incorrect WhatsApp metadata, or any direct purchase implication.
+Production is approved only when every required item above is complete or has a named owner, written risk acceptance, and review date. Critical exceptions are not eligible for risk acceptance: broken enquiry delivery, missing legal identity/privacy notice, analytics without required consent, exposed secrets, inaccessible core journeys, broken or oversized image delivery, incorrect WhatsApp metadata, or any direct purchase implication.
