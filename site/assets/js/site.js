@@ -115,6 +115,40 @@
     });
   }
 
+  var productHeading = document.querySelector(".detail-copy h1");
+  var productActions = document.querySelector(".detail-copy .product-actions");
+  if (productHeading && productActions && !productActions.querySelector("[data-share-product]")) {
+    var shareButton = document.createElement("button");
+    var productName = productHeading.textContent.trim();
+    shareButton.className = "button button-share";
+    shareButton.type = "button";
+    shareButton.textContent = "Share bicycle";
+    shareButton.setAttribute("data-share-product", "");
+    shareButton.setAttribute("aria-label", "Share " + productName);
+    productActions.appendChild(shareButton);
+
+    shareButton.addEventListener("click", function () {
+      var canonical = document.querySelector('link[rel="canonical"]');
+      var productUrl = canonical ? canonical.href : window.location.href.split("#")[0];
+      var shareData = {
+        title: productName + " | Vayu Bicycles",
+        text: "Take a look at the " + productName + " bicycle from Vayu Bicycles.",
+        url: productUrl
+      };
+      function openWhatsApp() {
+        var message = shareData.text + " " + shareData.url;
+        window.open("https://wa.me/?text=" + encodeURIComponent(message), "_blank", "noopener,noreferrer");
+      }
+      if (navigator.share && (!navigator.canShare || navigator.canShare(shareData))) {
+        navigator.share(shareData).catch(function (error) {
+          if (error && error.name !== "AbortError") { openWhatsApp(); }
+        });
+      } else {
+        openWhatsApp();
+      }
+    });
+  }
+
   var consentKey = "vayu-analytics-consent";
   var consentCookie = "vayu_analytics_consent";
   var banner = document.querySelector("[data-consent-banner]");

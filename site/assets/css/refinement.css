@@ -92,6 +92,19 @@
 .product-hero .text-link { color: #78a9ff; }
 .product-enquiry-note { color: var(--gray-30); }
 
+.button-share {
+  border-color: #78a9ff;
+  background: transparent;
+  color: var(--white);
+}
+
+.button-share:hover,
+.button-share:focus-visible {
+  border-color: var(--white);
+  background: var(--white);
+  color: var(--gray-100);
+}
+
 .spec-list {
   margin: 30px 0 22px;
   border-top-color: var(--gray-70);
