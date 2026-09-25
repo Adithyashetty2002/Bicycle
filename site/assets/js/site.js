@@ -112,29 +112,56 @@
       button.setAttribute("aria-pressed", String(button.getAttribute("data-consent") === value));
     });
   }
+  function readConsent() {
+    try {
+      return localStorage.getItem(consentKey) || "";
+    } catch (error) {
+      return "";
+    }
+  }
+  function storeConsent(value) {
+    try {
+      localStorage.setItem(consentKey, value);
+    } catch (error) {
+      // Privacy-focused browsers can block storage. The choice should still
+      // take effect for the current page instead of leaving the banner stuck.
+    }
+  }
+  function clearInvalidConsent() {
+    try {
+      localStorage.removeItem(consentKey);
+    } catch (error) {
+      // There is nothing else to clear when browser storage is unavailable.
+    }
+  }
   function applyConsent(value) {
     if (value !== "granted" && value !== "denied") { return; }
-    localStorage.setItem(consentKey, value);
+    storeConsent(value);
     updateConsentUi(value);
-    window.dispatchEvent(new CustomEvent("vayu:consent", { detail: value }));
     if (banner) { banner.hidden = true; }
+    window.dispatchEvent(new CustomEvent("vayu:consent", { detail: value }));
   }
-  var savedConsent = localStorage.getItem(consentKey);
+  var savedConsent = readConsent();
   if (savedConsent !== "granted" && savedConsent !== "denied") {
-    localStorage.removeItem(consentKey);
+    clearInvalidConsent();
     savedConsent = "";
   }
   updateConsentUi(savedConsent);
   if (banner && !savedConsent) { banner.hidden = false; }
-  document.querySelectorAll("[data-consent]").forEach(function (button) {
-    button.addEventListener("click", function () { applyConsent(button.getAttribute("data-consent")); });
-  });
-  document.querySelectorAll("[data-open-consent]").forEach(function (button) {
-    button.addEventListener("click", function () {
+  document.addEventListener("click", function (event) {
+    var choice = event.target.closest("[data-consent]");
+    if (choice) {
+      event.preventDefault();
+      applyConsent(choice.getAttribute("data-consent"));
+      return;
+    }
+    var opener = event.target.closest("[data-open-consent]");
+    if (opener) {
+      event.preventDefault();
       if (!banner) { return; }
       banner.hidden = false;
       var firstChoice = banner.querySelector("[data-consent]");
       if (firstChoice) { firstChoice.focus(); }
-    });
+    }
   });
 })();

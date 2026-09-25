@@ -219,6 +219,8 @@
   box-shadow: 0 12px 40px rgba(0, 0, 0, .28);
 }
 
+.consent-banner[hidden] { display: none !important; }
+
 .consent-banner p { color: var(--gray-30); }
 
 .consent-banner .button-plain {

@@ -36,5 +36,9 @@
   window.addEventListener("vayu:consent", function (event) {
     if (event.detail === "granted") { loadAnalytics(); } else { revokeAnalytics(); }
   });
-  if (localStorage.getItem("vayu-analytics-consent") === "granted") { loadAnalytics(); }
+  try {
+    if (localStorage.getItem("vayu-analytics-consent") === "granted") { loadAnalytics(); }
+  } catch (error) {
+    // Analytics remains disabled when browser storage is unavailable.
+  }
 })();
